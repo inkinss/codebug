@@ -1,3 +1,17 @@
 {
-  "conventionalCommits.scopes": ["format", "config"]
+  "conventionalCommits.scopes": [
+    "format",
+    "config",
+    "installs",
+    "prisma",
+    "gitignore",
+    "md",
+    "globals",
+    "shadcn",
+    "modules",
+    "hooks",
+    "types",
+    "layout",
+    "styles"
+  ]
 }

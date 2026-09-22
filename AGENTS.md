@@ -1,9 +1,18 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# AGENTS.md
 
-# This is NOT the Next.js you know
+## Stack
+- Next.js (App Router) + TypeScript
+- TailwindCSS + shadcn/ui
+- PostgreSQL (Neon) + Prismabunx --bun shadcn@latest init
+- Better Auth (GitHub OAuth)
+- Zod para validaciones
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+## Comandos
+- `bun run dev` — correr en desarrollo
+- `npx prisma studio` — ver la base de datos visualmente
+- `npx prisma migrate dev` — aplicar cambios al schema
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
+## Convenciones
+- Server Components por defecto, "use client" solo cuando haga falta
+- Server Actions para mutaciones (crear post, votar, comentar)
+- Nombres de archivos en kebab-case
