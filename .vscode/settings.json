@@ -12,6 +12,9 @@
     "hooks",
     "types",
     "layout",
-    "styles"
+    "styles",
+    "api",
+    "better-auth",
+    "components"
   ]
 }

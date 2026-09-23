@@ -4,30 +4,74 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
-    "post": {
+    "comments": {
+      "model": "Comment",
+      "namespace": "public"
+    },
+    "post_tags": {
+      "model": "PostTag",
+      "namespace": "public"
+    },
+    "posts": {
       "model": "Post",
       "namespace": "public"
     },
-    "user": {
+    "tags": {
+      "model": "Tag",
+      "namespace": "public"
+    },
+    "users": {
       "model": "User",
+      "namespace": "public"
+    },
+    "votes": {
+      "model": "Vote",
       "namespace": "public"
     }
   },
   "domain": {
     "namespaces": {
       "public": {
+        "enum": {
+          "Role": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "USER",
+                "value": "USER"
+              },
+              {
+                "name": "ADMIN",
+                "value": "ADMIN"
+              }
+            ]
+          },
+          "VoteType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "UPVOTE",
+                "value": "UPVOTE"
+              },
+              {
+                "name": "DOWNVOTE",
+                "value": "DOWNVOTE"
+              }
+            ]
+          }
+        },
         "models": {
-          "Post": {
+          "Comment": {
             "fields": {
               "authorId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
               "content": {
-                "nullable": true,
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -36,18 +80,25 @@
               "createdAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamptz-string@1",
+                  "codecId": "pg/timestamptz-temporal@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
-              "title": {
+              "parentId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "postId": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
@@ -57,7 +108,7 @@
               "updatedAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamptz-string@1",
+                  "codecId": "pg/timestamptz-temporal@1",
                   "kind": "scalar"
                 }
               }
@@ -78,6 +129,68 @@
                   "model": "User",
                   "namespace": "public"
                 }
+              },
+              "parent": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "parentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Comment",
+                  "namespace": "public"
+                }
+              },
+              "post": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "postId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Post",
+                  "namespace": "public"
+                }
+              },
+              "replies": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "parentId"
+                  ]
+                },
+                "to": {
+                  "model": "Comment",
+                  "namespace": "public"
+                }
+              },
+              "votes": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "commentId"
+                  ]
+                },
+                "to": {
+                  "model": "Vote",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -94,42 +207,66 @@
                 "id": {
                   "column": "id"
                 },
-                "title": {
-                  "column": "title"
+                "parentId": {
+                  "column": "parentId"
+                },
+                "postId": {
+                  "column": "postId"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
                 }
               },
               "namespaceId": "public",
-              "table": "post"
+              "table": "comments"
             }
           },
-          "User": {
+          "Post": {
             "fields": {
-              "createdAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "kind": "scalar"
-                }
-              },
-              "email": {
+              "authorId": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
-              "id": {
+              "content": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
-              "name": {
-                "nullable": true,
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "published": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "slug": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "title": {
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -138,12 +275,187 @@
               "updatedAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamptz-string@1",
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "author": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "authorId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "comments": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "postId"
+                  ]
+                },
+                "to": {
+                  "model": "Comment",
+                  "namespace": "public"
+                }
+              },
+              "tags": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "postId"
+                  ]
+                },
+                "to": {
+                  "model": "PostTag",
+                  "namespace": "public"
+                }
+              },
+              "votes": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "postId"
+                  ]
+                },
+                "to": {
+                  "model": "Vote",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "authorId": {
+                  "column": "authorId"
+                },
+                "content": {
+                  "column": "content"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "published": {
+                  "column": "published"
+                },
+                "slug": {
+                  "column": "slug"
+                },
+                "title": {
+                  "column": "title"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "posts"
+            }
+          },
+          "PostTag": {
+            "fields": {
+              "postId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
-              "username": {
-                "nullable": true,
+              "tagId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "post": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "postId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Post",
+                  "namespace": "public"
+                }
+              },
+              "tag": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "tagId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Tag",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "postId": {
+                  "column": "postId"
+                },
+                "tagId": {
+                  "column": "tagId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "post_tags"
+            }
+          },
+          "Tag": {
+            "fields": {
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "slug": {
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -158,6 +470,133 @@
                     "id"
                   ],
                   "targetFields": [
+                    "tagId"
+                  ]
+                },
+                "to": {
+                  "model": "PostTag",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "slug": {
+                  "column": "slug"
+                }
+              },
+              "namespaceId": "public",
+              "table": "tags"
+            }
+          },
+          "User": {
+            "fields": {
+              "avatarUrl": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "bio": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "password": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "role": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "Role",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "username": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "comments": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "authorId"
+                  ]
+                },
+                "to": {
+                  "model": "Comment",
+                  "namespace": "public"
+                }
+              },
+              "posts": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
                     "authorId"
                   ]
                 },
@@ -165,10 +604,31 @@
                   "model": "Post",
                   "namespace": "public"
                 }
+              },
+              "votes": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "Vote",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
               "fields": {
+                "avatarUrl": {
+                  "column": "avatarUrl"
+                },
+                "bio": {
+                  "column": "bio"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -181,6 +641,12 @@
                 "name": {
                   "column": "name"
                 },
+                "password": {
+                  "column": "password"
+                },
+                "role": {
+                  "column": "role"
+                },
                 "updatedAt": {
                   "column": "updatedAt"
                 },
@@ -189,7 +655,133 @@
                 }
               },
               "namespaceId": "public",
-              "table": "user"
+              "table": "users"
+            }
+          },
+          "Vote": {
+            "fields": {
+              "commentId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "postId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "VoteType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "comment": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "commentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Comment",
+                  "namespace": "public"
+                }
+              },
+              "post": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "postId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Post",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "commentId": {
+                  "column": "commentId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "postId": {
+                  "column": "postId"
+                },
+                "type": {
+                  "column": "type"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "votes"
             }
           }
         }
@@ -201,20 +793,20 @@
       "public": {
         "entries": {
           "table": {
-            "post": {
+            "comments": {
               "columns": {
                 "authorId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "content": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false
                 },
                 "createdAt": {
-                  "codecId": "pg/timestamptz-string@1",
+                  "codecId": "pg/timestamptz-temporal@1",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
@@ -223,40 +815,75 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
-                "title": {
+                "parentId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "postId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "updatedAt": {
-                  "codecId": "pg/timestamptz-string@1",
+                  "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
                   "nullable": false
                 }
               },
               "foreignKeys": [
                 {
+                  "onDelete": "cascade",
                   "source": {
                     "columns": [
                       "authorId"
                     ],
                     "namespaceId": "public",
-                    "tableName": "post"
+                    "tableName": "comments"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
                     "namespaceId": "public",
-                    "tableName": "user"
+                    "tableName": "users"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "postId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "comments"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "posts"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "parentId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "comments"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "comments"
                   }
                 }
               ],
@@ -265,8 +892,24 @@
                   "columns": [
                     "authorId"
                   ],
-                  "name": "post_authorId_idx_e47547ed",
-                  "prefix": "post_authorId_idx",
+                  "name": "comments_authorId_idx_e47547ed",
+                  "prefix": "comments_authorId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "parentId"
+                  ],
+                  "name": "comments_parentId_idx_6a68f597",
+                  "prefix": "comments_parentId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "postId"
+                  ],
+                  "name": "comments_postId_idx_a7a72715",
+                  "prefix": "comments_postId_idx",
                   "unique": false
                 }
               ],
@@ -277,10 +920,233 @@
               },
               "uniques": []
             },
-            "user": {
+            "post_tags": {
               "columns": {
+                "postId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "tagId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "postId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "post_tags"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "posts"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "tagId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "post_tags"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "tags"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "postId"
+                  ],
+                  "name": "post_tags_postId_idx_a7a72715",
+                  "prefix": "post_tags_postId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "tagId"
+                  ],
+                  "name": "post_tags_tagId_idx_86854244",
+                  "prefix": "post_tags_tagId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "postId",
+                  "tagId"
+                ]
+              },
+              "uniques": []
+            },
+            "posts": {
+              "columns": {
+                "authorId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "content": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "createdAt": {
-                  "codecId": "pg/timestamptz-string@1",
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "published": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "slug": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "title": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "authorId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "posts"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "authorId"
+                  ],
+                  "name": "posts_authorId_idx_e47547ed",
+                  "prefix": "posts_authorId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "slug"
+                  ]
+                }
+              ]
+            },
+            "tags": {
+              "columns": {
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "slug": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "name"
+                  ]
+                },
+                {
+                  "columns": [
+                    "slug"
+                  ]
+                }
+              ]
+            },
+            "users": {
+              "checks": [
+                {
+                  "expression": "\"role\" IN ('USER', 'ADMIN')",
+                  "name": "users_role_check_1954e8c0",
+                  "prefix": "users_role_check"
+                }
+              ],
+              "columns": {
+                "avatarUrl": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "bio": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
@@ -294,12 +1160,8 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "name": {
@@ -307,15 +1169,35 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "password": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "role": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "USER"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "Role",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
                 "updatedAt": {
-                  "codecId": "pg/timestamptz-string@1",
+                  "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "username": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false
                 }
               },
               "foreignKeys": [],
@@ -330,7 +1212,177 @@
                   "columns": [
                     "email"
                   ]
+                },
+                {
+                  "columns": [
+                    "username"
+                  ]
                 }
+              ]
+            },
+            "votes": {
+              "checks": [
+                {
+                  "expression": "\"type\" IN ('UPVOTE', 'DOWNVOTE')",
+                  "name": "votes_type_check_218d7ab6",
+                  "prefix": "votes_type_check"
+                }
+              ],
+              "columns": {
+                "commentId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "postId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "VoteType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "userId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "votes"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "postId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "votes"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "posts"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "commentId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "votes"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "comments"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "commentId"
+                  ],
+                  "name": "votes_commentId_idx_b5a4f615",
+                  "prefix": "votes_commentId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "postId"
+                  ],
+                  "name": "votes_postId_idx_a7a72715",
+                  "prefix": "votes_postId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "votes_userId_idx_a489d58a",
+                  "prefix": "votes_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "userId",
+                    "postId"
+                  ]
+                },
+                {
+                  "columns": [
+                    "userId",
+                    "commentId"
+                  ]
+                }
+              ]
+            }
+          },
+          "valueSet": {
+            "Role": {
+              "kind": "valueSet",
+              "values": [
+                "USER",
+                "ADMIN"
+              ]
+            },
+            "VoteType": {
+              "kind": "valueSet",
+              "values": [
+                "UPVOTE",
+                "DOWNVOTE"
               ]
             }
           }
@@ -339,40 +1391,110 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1e8412e162dbbe69f4bb3bf8d07f0280ae67eaab15c34dcf201e67468315428d"
+    "storageHash": "2c6a674965f6337aeaa0cb591d7813fb9040fdc28a6322ada7ec340630655959"
   },
   "execution": {
-    "executionHash": "4abff323cc88151ef9c9a0ec90122cfee6d46814a118cdb66a9fdd94a4123463",
+    "executionHash": "b3432624681f6015b8c54e45d5778fedd067f1afe3d75847dc652aaa0f95ea66",
     "mutations": {
       "defaults": [
         {
           "onCreate": {
-            "id": "timestampNow",
-            "kind": "generator"
-          },
-          "onUpdate": {
-            "id": "timestampNow",
+            "id": "uuidv4",
             "kind": "generator"
           },
           "ref": {
-            "column": "updatedAt",
+            "column": "id",
             "namespace": "public",
-            "table": "post"
+            "table": "comments"
           }
         },
         {
           "onCreate": {
-            "id": "timestampNow",
+            "id": "instantNow",
             "kind": "generator"
           },
           "onUpdate": {
-            "id": "timestampNow",
+            "id": "instantNow",
             "kind": "generator"
           },
           "ref": {
             "column": "updatedAt",
             "namespace": "public",
-            "table": "user"
+            "table": "comments"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "posts"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "posts"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "tags"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "users"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "users"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "votes"
           }
         }
       ]

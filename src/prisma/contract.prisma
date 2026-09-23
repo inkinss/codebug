@@ -1,21 +1,115 @@
 // use prisma-8
 
+enum Role {
+  USER
+  ADMIN
+}
+
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   email     String   @unique
-  username  String?
+  username  String   @unique
+  password  String
   name      String?
+  avatarUrl String?
+  bio       String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt temporal.updatedAt()
+
   posts     Post[]
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+  comments  Comment[]
+  votes     Vote[]
+
+  @@map("users")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt temporal.updatedAt()
+
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  postId    String
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Para permitir respuestas anidadas (comentario a comentario)
+  parentId  String?
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies   Comment[] @relation("CommentReplies")
+
+  votes     Vote[]
+
+  @@index([postId])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model Vote {
+  id        String   @id @default(uuid())
+  type      VoteType
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  // Evita que un usuario vote dos veces el mismo post/comentario
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+  @@map("votes")
+}
+
+model Tag {
+  id    String    @id @default(uuid())
+  name  String    @unique
+  slug  String    @unique
+
+  posts PostTag[]
+
+  @@map("tags")
+}
+
+model PostTag {
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  tagId  String
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   title     String
-  content   String?
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+  slug      String   @unique
+  content   String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt temporal.updatedAt()
+
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  comments  Comment[]
+  votes     Vote[]
+  tags      PostTag[]
+
+  @@index([authorId])
+  @@map("posts")
 }
