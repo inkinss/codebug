@@ -5,8 +5,8 @@ import AvatarProfile from "../avatar/Avatar";
 
 const NavBar = () => {
   return (
-    <div className="p-5 flex items-center justify-between">
-      <section className="flex items-center gap-6">
+    <div className="py-5 flex justify-between">
+      <section className="flex gap-6 items-center">
         <Anchor />
         <InputSearch />
         <CMDK />
