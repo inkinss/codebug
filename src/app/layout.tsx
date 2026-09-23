@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import NavBar from "@/modules/navBar/NavBar";
+import { AppSidebar } from "@/modules/sidebar/Sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -35,8 +37,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       )}
     >
       <body className="min-h-full flex flex-col">
-        <NavBar />
-        {children}
+        <SidebarProvider>
+          <AppSidebar />
+          <div className="flex-1 flex flex-col px-5">
+            <NavBar />
+            {children}
+          </div>
+        </SidebarProvider>
       </body>
     </html>
   );
