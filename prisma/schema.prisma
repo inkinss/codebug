@@ -1,0 +1,275 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String     @id
+  name          String
+  email         String
+  emailVerified Boolean    @default(false)
+  image         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  profiles      Profile[]
+  posts         Post[]
+  comments      Comment[]
+  reactions     Reaction[]
+  bookmarks     Bookmark[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+
+// tablas de contendio
+// ============================================================
+// Modelos del MVP: profiles, sections, tags, posts, post_tags,
+// comments, reactions, bookmarks
+// ============================================================
+
+// ---------- Enums ----------
+
+enum Role {
+  USER      @map("user")
+  MODERATOR @map("moderator")
+  ADMIN     @map("admin")
+
+  @@map("role")
+}
+
+enum PostStatus {
+  DRAFT     @map("draft")
+  PUBLISHED @map("published")
+  ARCHIVED  @map("archived")
+
+  @@map("post_status")
+}
+
+enum ReactionType {
+  LIKE       @map("like")
+  FIRE       @map("fire")
+  INSIGHTFUL @map("insightful")
+  FUNNY      @map("funny")
+
+  @@map("reaction_type")
+}
+
+// ---------- Perfiles (1:1 con user) ----------
+
+model Profile {
+  userId    String   @id
+  username  String   @unique // para /u/[username]
+  bio       String?
+  website   String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+// ---------- Secciones ----------
+
+model Section {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+  color       String?
+  icon        String?
+  sortOrder   Int     @default(0)
+
+  posts Post[]
+
+  @@map("sections")
+}
+
+// ---------- Tags ----------
+
+model Tag {
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  posts PostTag[]
+
+  @@map("tags")
+}
+
+// ---------- Posts ----------
+
+model Post {
+  id                 String     @id @default(cuid())
+  authorId           String
+  sectionId          String
+  title              String
+  slug               String     @unique
+  excerpt            String?
+  content            String     @db.Text // Markdown
+  coverImageUrl      String?
+  status             PostStatus @default(DRAFT)
+  publishedAt        DateTime?
+  readingTimeMinutes Int        @default(1)
+  viewCount          Int        @default(0)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  section   Section    @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+  tags      PostTag[]
+  comments  Comment[]
+  reactions Reaction[]
+  bookmarks Bookmark[]
+
+  @@index([status, publishedAt])
+  @@index([sectionId])
+  @@index([authorId])
+  @@map("posts")
+}
+
+// ---------- Post ↔ Tag (N:M) ----------
+
+model PostTag {
+  postId String
+  tagId  String
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([tagId])
+  @@map("post_tags")
+}
+
+// ---------- Comentarios (hilos con soft delete) ----------
+
+model Comment {
+  id        String    @id @default(cuid())
+  postId    String
+  authorId  String
+  parentId  String?
+  content   String    @db.Text // Markdown
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // soft delete
+
+  post      Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Comment?   @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]  @relation("CommentReplies")
+  reactions Reaction[]
+
+  @@index([postId, createdAt])
+  @@index([parentId])
+  @@index([authorId])
+  @@map("comments")
+}
+
+// ---------- Reacciones (a post O a comentario) ----------
+// Regla "exactamente uno de postId/commentId": Prisma no soporta CHECK,
+// se añade con SQL en la migración (ver instrucciones abajo).
+//
+// Los dos @@unique cubren "único por (user, target, type)":
+// en Postgres los NULL no colisionan, así que cada uno aplica
+// solo a su tipo de objetivo.
+
+model Reaction {
+  id        String       @id @default(cuid())
+  userId    String
+  postId    String?
+  commentId String?
+  type      ReactionType
+  createdAt DateTime     @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId, type])
+  @@unique([userId, commentId, type])
+  @@index([postId])
+  @@index([commentId])
+  @@map("reactions")
+}
+
+// ---------- Bookmarks ----------
+
+model Bookmark {
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@index([postId])
+  @@map("bookmarks")
+}
+
+// ============================================================
+// SQL para la migración (reactions): crea la migración con
+//   npx prisma migrate dev --create-only --name init_models
+// y pega esto al final del migration.sql antes de aplicarla:
+//
+// ALTER TABLE "reactions"
+//   ADD CONSTRAINT "reactions_one_target_chk"
+//   CHECK (("postId" IS NOT NULL)::int + ("commentId" IS NOT NULL)::int = 1);
+// ============================================================
