@@ -1,5 +1,7 @@
 # CodeBug
 
+[![CI](https://github.com/inkinss/codebug/actions/workflows/ci.yml/badge.svg)](https://github.com/inkinss/codebug/actions/workflows/ci.yml)
+
 Plataforma para que developers publiquen artículos técnicos, compartan hallazgos y discutan sin ruido. Cualquiera puede crear una cuenta, escribir, comentar y reaccionar.
 
 > **Estado:** planificación. El producto todavía no está implementado.
@@ -48,7 +50,7 @@ bun start            # servidor de producción
 bun run lint         # Biome: lint + formato + imports (chequeo)
 bun run format       # Biome: formatea y escribe
 bun run check        # Biome: aplica fixes seguros y formatea
-bunx tsc --noEmit    # typecheck (se añadirá como script en Fase 0)
+bun run typecheck    # genera tipos de rutas de Next y ejecuta tsc --noEmit
 ```
 
 Biome está configurado con **tabs**, **comillas simples** y **ancho 80**. El formato no se discute: `bun run check` lo corrige.
