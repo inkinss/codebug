@@ -9,6 +9,7 @@
 		"lint": "biome check",
 		"format": "biome format --write .",
 		"check": "biome check --write .",
+		"typecheck": "next typegen && tsc --noEmit",
 		"prepare": "husky"
 	},
 	"dependencies": {
