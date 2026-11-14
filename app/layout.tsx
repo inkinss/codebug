@@ -44,7 +44,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 				playfairDisplayHeading.variable,
 			)}
 		>
-			<body className="min-h-full flex flex-col">{children}</body>
+			<body className="min-h-full flex flex-col text-white">{children}</body>
 		</html>
 	);
 }
