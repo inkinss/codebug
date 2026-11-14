@@ -17,6 +17,12 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
+			"a11y": {
+				"noLabelWithoutControl": "off"
+			},
+			"suspicious": {
+				"noArrayIndexKey": "off"
+			},
 			"preset": "recommended",
 			"correctness": {
 				"noUnusedImports": {
