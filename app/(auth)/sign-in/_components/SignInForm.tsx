@@ -23,7 +23,10 @@ export const SignInForm = () => {
 				type="password"
 				placeholder="introduce tu contraseña"
 			/>
-			<Button type="submit" className="bg-span text-background mt-3">
+			<Button
+				type="submit"
+				className="bg-span text-background mt-3 hover:bg-white"
+			>
 				iniciar sesión
 			</Button>
 			<a
