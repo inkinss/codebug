@@ -49,7 +49,7 @@
 }
 
 :root {
-	--background: oklch(1 0 0);
+	--background: rgba(12, 13, 18, 100%);
 	--foreground: oklch(0.147 0.004 49.3);
 	--card: oklch(1 0 0);
 	--card-foreground: oklch(0.147 0.004 49.3);
@@ -127,4 +127,12 @@
 	html {
 		@apply font-sans;
 	}
+}
+
+@theme {
+	--color-button: rgb(64, 57, 67);
+	--color-span: rgb(188, 162, 255);
+	--color-light: rgb(166, 161, 178);
+	--color-input: rgb(20, 19, 26);
+	--color-hoverInput: rgb(130, 124, 145);
 }
