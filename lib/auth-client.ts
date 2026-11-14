@@ -1,10 +1,11 @@
 import { createAuthClient } from 'better-auth/client';
 
-const authClient = createAuthClient();
+export const authClient = createAuthClient();
+type Provider = 'github' | 'google';
 
-export const signIn = async () => {
+export const signIn = async (provider: Provider) => {
 	const data = await authClient.signIn.social({
-		provider: 'github',
+		provider: provider,
 	});
 	return data;
 };
