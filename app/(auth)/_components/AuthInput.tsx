@@ -1,21 +1,22 @@
-import { Field } from '@/components/ui/field';
+import type { ComponentProps } from 'react';
 import { Input } from '@/components/ui/input';
 
-type LoginInputProps = {
+type AuthInputProps = ComponentProps<typeof Input> & {
 	label: string;
-	type: string;
-	placeholder?: string;
+	error?: string;
 };
 
-const AuthInput = ({ label, type, placeholder }: LoginInputProps) => {
+const AuthInput = ({ label, id, error, ...props }: AuthInputProps) => {
 	return (
-		<div>
-			<Field className="mb-2">{label}</Field>
+		<div className="flex flex-col gap-2">
+			<label htmlFor={id}>{label}</label>
 			<Input
+				id={id}
 				className="bg-input text-hoverInput px-3"
-				type={type}
-				placeholder={placeholder}
+				aria-invalid={!!error}
+				{...props}
 			/>
+			{error && <p className="text-sm text-red-500">{error}</p>}
 		</div>
 	);
 };
