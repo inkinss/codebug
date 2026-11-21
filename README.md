@@ -1,6 +1,6 @@
 # CodeBug
 
-[![CI](https://github.com/inkinss/codebug/actions/workflows/ci.yml/badge.svg)](https://github.com/inkinss/codebug/actions/workflows/ci.yml)
+[![CI](https://github.com/inkinss/codebug/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/inkinss/codebug/actions/workflows/ci.yml)
 
 Plataforma para que developers publiquen artículos técnicos, compartan hallazgos y discutan sin ruido. Cualquiera puede crear una cuenta, escribir, comentar y reaccionar.
 
