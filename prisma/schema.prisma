@@ -8,20 +8,22 @@ datasource db {
 }
 
 model User {
-  id            String     @id
-  name          String
-  email         String
-  emailVerified Boolean    @default(false)
-  image         String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  profiles      Profile[]
-  posts         Post[]
-  comments      Comment[]
-  reactions     Reaction[]
-  bookmarks     Bookmark[]
+  id              String     @id
+  name            String
+  displayUsername String
+  username        String
+  email           String
+  emailVerified   Boolean    @default(false)
+  image           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  sessions        Session[]
+  accounts        Account[]
+  profiles        Profile[]
+  posts           Post[]
+  comments        Comment[]
+  reactions       Reaction[]
+  bookmarks       Bookmark[]
 
   @@unique([email])
   @@map("user")
@@ -74,7 +76,6 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
-
 
 // tablas de contendio
 // ============================================================
