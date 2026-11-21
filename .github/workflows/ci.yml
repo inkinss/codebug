@@ -21,6 +21,7 @@ jobs:
 
     env:
       HUSKY: 0
+      DATABASE_URL: postgresql://user:pass@localhost:5432/db
 
     steps:
       - name: Checkout
@@ -50,5 +51,3 @@ jobs:
 
       - name: Typecheck
         run: bun run typecheck
-env:
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
