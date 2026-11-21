@@ -50,3 +50,5 @@ jobs:
 
       - name: Typecheck
         run: bun run typecheck
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
